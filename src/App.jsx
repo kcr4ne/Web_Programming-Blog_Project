@@ -1,49 +1,40 @@
 import React from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Notification from './components/Notification';
+import MyPostsSidebar from './components/MyPostsSidebar';
 import PostList from './views/PostList';
 import PostDetail from './views/PostDetail';
 import NewPost from './views/NewPost';
 import EditPost from './views/EditPost';
 import SignUp from './views/SignUp';
 import Login from './views/Login';
-import { useAuth } from './contexts/AuthContext';
-import { logout } from './services/authService';
+import PrivateRoute from './components/PrivateRoute';
+import './App.css';
 
 function App() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
   return (
     <div className="App">
-      <header>
-        <h1><Link to="/">My Blog</Link></h1>
-        <nav>
-          {user ? (
-            <>
-              <span>{user.email}</span>
-              <button onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/signup">Sign Up</Link>
-              <Link to="/login">Login</Link>
-            </>
-          )}
-        </nav>
-      </header>
-      <Routes>
-        <Route path="/" element={<PostList />} />
-        <Route path="/posts/:id" element={<PostDetail />} />
-        <Route path="/new-post" element={<NewPost />} />
-        <Route path="/edit-post/:id" element={<EditPost />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
+      <Navbar />
+      <Notification />
+      <div style={{ display: 'flex', gap: '2rem' }}>
+        <MyPostsSidebar />
+        <main style={{ flex: 1, padding: '1rem 0' }}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<PostList />} />
+            <Route path="/post/:id" element={<PostDetail />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+
+            {/* Protect routes that require authentication */}
+            <Route element={<PrivateRoute />}>
+              <Route path="/new" element={<NewPost />} />
+              <Route path="/edit/:id" element={<EditPost />} />
+            </Route>
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,59 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPostById, updatePost } from '../services/postService';
+import { updatePost } from '../services/postService';
 import PostForm from '../components/PostForm';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { useNotification } from '../hooks/useNotification';
+import { usePost } from '../hooks/usePost';
 
 function EditPost() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [initialData, setInitialData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { showNotification } = useNotification();
+  const { post: initialData, loading: postLoading } = usePost(id);
   const [formLoading, setFormLoading] = useState(false);
 
+  // Security check: Redirect if not the author or admin
   useEffect(() => {
-    async function fetchPost() {
-      try {
-        setLoading(true);
-        const data = await getPostById(id);
-        setInitialData(data);
-      } catch (error) {
-        alert('Error fetching post data.');
-        navigate('/');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPost();
-  }, [id, navigate]);
+    if (authLoading || postLoading) return;
 
-  // Security check: Redirect if not the author
-  useEffect(() => {
-    if (loading) return; // Wait for post data to load
+    const isOwner = initialData && user && user.id === initialData.user_id;
 
-    if (!user || (initialData && user.id !== initialData.user_id)) {
-      alert('You are not authorized to edit this post.');
+    if (!user || (!isOwner && !isAdmin)) {
+      showNotification('You are not authorized to edit this post.', 'error');
       navigate('/');
     }
-  }, [user, initialData, loading, navigate]);
+  }, [user, initialData, authLoading, postLoading, navigate, showNotification, isAdmin]);
 
   const handleUpdate = async (postData) => {
     try {
       setFormLoading(true);
       await updatePost(id, postData);
-      alert('Post updated successfully!');
-      navigate(`/posts/${id}`);
+      showNotification('Post updated successfully!', 'success');
+      navigate(`/post/${id}`);
     } catch (error) {
-      alert(`Error updating post: ${error.message}`);
+      showNotification(`Error updating post: ${error.message}`, 'error');
     } finally {
       setFormLoading(false);
     }
   };
 
-  // Render nothing or a loader while security check is performed
-  if (loading || !initialData || !user || user.id !== initialData.user_id) {
+  if (authLoading || postLoading || !initialData) {
     return <p>Loading and verifying...</p>;
+  }
+
+  // Final check to ensure the correct user is editing
+  if (!user || (user.id !== initialData.user_id && !isAdmin)) {
+    return <p>Verifying user...</p>;
   }
 
   return (

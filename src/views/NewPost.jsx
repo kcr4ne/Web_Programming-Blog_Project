@@ -2,26 +2,33 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPost } from '../services/postService';
 import PostForm from '../components/PostForm';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { useNotification } from '../hooks/useNotification';
 
 function NewPost() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showNotification } = useNotification();
 
   const handleCreate = async (postData) => {
     if (!user) {
-      alert('You must be logged in to create a post.');
+      showNotification('You must be logged in to create a post.', 'error');
       return;
     }
 
     try {
       setLoading(true);
-      await createPost({ ...postData, user_id: user.id });
-      alert('Post created successfully!');
-      navigate('/');
+      const newPosts = await createPost({ ...postData, user_id: user.id });
+      if (newPosts && newPosts.length > 0) {
+        const newPostId = newPosts[0].id;
+        showNotification('Post created successfully!', 'success');
+        navigate(`/post/${newPostId}`);
+      } else {
+        throw new Error('Failed to create post. Please try again.');
+      }
     } catch (error) {
-      alert(`Error creating post: ${error.message}`);
+      showNotification(error.message, 'error');
     } finally {
       setLoading(false);
     }

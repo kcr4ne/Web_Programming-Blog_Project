@@ -1,46 +1,50 @@
 import React, { useState } from 'react';
 import { signUp } from '../services/authService';
+import { useNotification } from '../hooks/useNotification';
 
 function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const { showNotification } = useNotification();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     try {
       await signUp(email, password);
-      setSuccess('Sign up successful! Please check your email to confirm.');
+      showNotification('Sign up successful! Please check your email to confirm your account.', 'success');
+      setEmail('');
+      setPassword('');
     } catch (err) {
-      setError(err.message);
+      showNotification(err.message, 'error');
     }
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
+    <div className="form-container">
+      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Account</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Sign Up</button>
+        <div className="form-group">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="form-input"
+          />
+        </div>
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Password (at least 6 characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="form-input"
+          />
+        </div>
+        <button type="submit" className="button button-primary" style={{ width: '100%' }}>Sign Up</button>
       </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
     </div>
   );
 }

@@ -1,58 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getPosts } from '../services/postService';
-import { useAuth } from '../contexts/AuthContext';
+import PostItem from '../components/PostItem';
+import { usePosts } from '../hooks/usePosts';
 
 function PostList() {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('created_at'); // created_at for latest, views for popular
-  const { user } = useAuth();
-
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        setLoading(true);
-        const ascending = sortBy === 'created_at' ? false : false; // Both should be descending
-        const data = await getPosts(sortBy, ascending);
-        setPosts(data);
-      } catch (error) {
-        alert('Error fetching posts.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPosts();
-  }, [sortBy]);
+  const { posts, loading } = usePosts(sortBy);
 
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Posts</h2>
-        <div>
-          <button onClick={() => setSortBy('created_at')}>최신순</button>
-          <button onClick={() => setSortBy('views')}>인기순</button>
-          {user && <Link to="/new-post" style={{ marginLeft: '1rem' }}>Create New Post</Link>}
+    <section>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setSortBy('created_at')} disabled={sortBy === 'created_at'} className="button">최신순</button>
+          <button onClick={() => setSortBy('views')} disabled={sortBy === 'views'} className="button">인기순</button>
         </div>
       </div>
+      
       {loading ? (
         <p>Loading posts...</p>
       ) : posts.length === 0 ? (
-        <p>No posts found. (Check if the 'posts' table exists and has data in Supabase.)</p>
+        <div style={{ textAlign: 'center', padding: '4rem', border: '1px dashed #444', borderRadius: '8px' }}>
+          <h3>No posts found.</h3>
+          <p>Why not be the first to write one?</p>
+        </div>
       ) : (
-        <ul>
+        <div className="post-list">
           {posts.map((post) => (
-            <li key={post.id}>
-              <Link to={`/posts/${post.id}`}>
-                <h3>{post.title ?? 'Untitled Post'}</h3>
-                <p>Views: {post.views ?? 0}</p> 
-              </Link>
-            </li>
+            <PostItem key={post.id} post={post} />
           ))}
-        </ul>
+        </div>
       )}
-    </main>
+    </section>
   );
 }
 
