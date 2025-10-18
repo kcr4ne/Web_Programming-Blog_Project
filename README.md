@@ -25,6 +25,12 @@
 - **Linting:** [ESLint](https://eslint.org/)
 - **Package Manager:** npm
 
+## ✨ 개발 워크플로우 (Development Workflow)
+이 프로젝트는 AI 기반의 개발 도구를 활용하여 생산성을 높이고 체계적인 개발 프로세스를 따릅니다.
+
+- **[Gemini CLI](https://developers.google.com/gemini/cli):** Google의 Gemini 모델을 커맨드 라인에서 사용하여 코드 생성, 리팩토링, 문서화 등 다양한 개발 작업을 자동화하고 지원합니다.
+- **Speckit:** 프로젝트의 요구사항 정의(`specify`), 계획(`plan`), 작업 분할(`tasks`) 등을 관리하는 명세 기반 개발 프레임워크입니다. Gemini CLI와 연동하여 일관성 있고 효율적인 개발을 돕습니다.
+
 ## 📂 프로젝트 구조 (Project Structure)
 
 ```
