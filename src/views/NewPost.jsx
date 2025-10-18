@@ -4,16 +4,18 @@ import { createPost } from '../services/postService';
 import PostForm from '../components/PostForm';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
+import { useMyPosts } from '../contexts/PostsContext';
 
 function NewPost() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showNotification } = useNotification();
+  const { addPost } = useMyPosts();
 
   const handleCreate = async (postData) => {
     if (!user) {
-      showNotification('You must be logged in to create a post.', 'error');
+      showNotification('게시물을 작성하려면 로그인해야 합니다.', 'error');
       return;
     }
 
@@ -21,11 +23,12 @@ function NewPost() {
       setLoading(true);
       const newPosts = await createPost({ ...postData, user_id: user.id });
       if (newPosts && newPosts.length > 0) {
-        const newPostId = newPosts[0].id;
-        showNotification('Post created successfully!', 'success');
-        navigate(`/post/${newPostId}`);
+        const newPost = newPosts[0];
+        showNotification('게시물이 성공적으로 작성되었습니다!', 'success');
+        addPost(newPost); // Add the new post to the context state
+        navigate(`/post/${newPost.id}`);
       } else {
-        throw new Error('Failed to create post. Please try again.');
+        throw new Error('게시물을 작성하지 못했습니다. 다시 시도해 주세요.');
       }
     } catch (error) {
       showNotification(error.message, 'error');
@@ -36,11 +39,11 @@ function NewPost() {
 
   return (
     <main>
-      <h2>Create a New Post</h2>
+      <h2>새 게시물 작성</h2>
       <PostForm
         onSubmit={handleCreate}
         loading={loading}
-        submitButtonText="Create Post"
+        submitButtonText="게시물 작성"
       />
     </main>
   );

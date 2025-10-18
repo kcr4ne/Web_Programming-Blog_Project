@@ -7,7 +7,7 @@ const PrivateRoute = () => {
 
   if (loading) {
     // While checking for user authentication, show a loading message.
-    return <div>Loading authentication status...</div>;
+    return <div>인증 상태를 확인하는 중...</div>;
   }
 
   // If the user is authenticated, render the nested content (the actual page).

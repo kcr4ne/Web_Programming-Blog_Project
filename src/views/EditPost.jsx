@@ -21,7 +21,7 @@ function EditPost() {
     const isOwner = initialData && user && user.id === initialData.user_id;
 
     if (!user || (!isOwner && !isAdmin)) {
-      showNotification('You are not authorized to edit this post.', 'error');
+      showNotification('이 게시물을 수정할 권한이 없습니다.', 'error');
       navigate('/');
     }
   }, [user, initialData, authLoading, postLoading, navigate, showNotification, isAdmin]);
@@ -30,32 +30,32 @@ function EditPost() {
     try {
       setFormLoading(true);
       await updatePost(id, postData);
-      showNotification('Post updated successfully!', 'success');
+      showNotification('게시물이 성공적으로 업데이트되었습니다!', 'success');
       navigate(`/post/${id}`);
     } catch (error) {
-      showNotification(`Error updating post: ${error.message}`, 'error');
+      showNotification(`게시물 업데이트 오류: ${error.message}`, 'error');
     } finally {
       setFormLoading(false);
     }
   };
 
   if (authLoading || postLoading || !initialData) {
-    return <p>Loading and verifying...</p>;
+    return <p>로딩 및 확인 중...</p>;
   }
 
   // Final check to ensure the correct user is editing
   if (!user || (user.id !== initialData.user_id && !isAdmin)) {
-    return <p>Verifying user...</p>;
+    return <p>사용자 확인 중...</p>;
   }
 
   return (
     <main>
-      <h2>Edit Post</h2>
+      <h2>게시물 수정</h2>
       <PostForm
         initialData={initialData}
         onSubmit={handleUpdate}
         loading={formLoading}
-        submitButtonText="Update Post"
+        submitButtonText="게시물 업데이트"
       />
     </main>
   );

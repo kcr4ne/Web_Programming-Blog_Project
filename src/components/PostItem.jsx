@@ -8,8 +8,15 @@ const PostItem = ({ post }) => {
     day: 'numeric',
   });
 
-  // Basic stripping of markdown/html for the snippet
-  const snippet = post.content.replace(/(\*\*|__|\*|~|`|>|#)/g, '').substring(0, 150);
+  const hasImage = /!\[.*\]\(.*\)/.test(post.content);
+  
+  let previewContent;
+  if (post.summary) {
+    previewContent = post.summary;
+  } else {
+    const snippet = post.content.replace(/(\*\*|__|\*|~|`|>|#|!\[.*\]\(.*\))/g, '').substring(0, 150);
+    previewContent = `${snippet}${post.content.length > 150 ? '...' : ''}`;
+  }
 
   return (
     <Link to={`/post/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -21,12 +28,15 @@ const PostItem = ({ post }) => {
         cursor: 'pointer',
         transition: 'background-color 0.2s ease-in-out, transform 0.2s ease-in-out',
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.75rem' }}>{post.title}</h2>
+        <h2 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.75rem' }}>
+          {post.title}
+        </h2>
         <p style={{ fontSize: '0.9rem', color: '#aaa', margin: '0 0 1rem 0' }}>
-          {postDate} &bull; {post.views || 0} views
+          {hasImage && '🖼️ • '}
+          {postDate} &bull; {post.profiles ? post.profiles.username : '익명'} &bull; {post.views || 0} 조회수
         </p>
         <p style={{ margin: 0, lineHeight: 1.6 }}>
-          {snippet}{post.content.length > 150 ? '...' : ''}
+          {previewContent}
         </p>
       </article>
     </Link>

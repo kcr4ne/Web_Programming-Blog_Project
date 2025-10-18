@@ -4,10 +4,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { logout } from '../services/authService';
 
+import { useSearch } from '../contexts/SearchContext';
+
 const Navbar = () => {
   const { user, setAuthSession } = useAuth(); // Get setAuthSession from context
   const navigate = useNavigate();
   const { showNotification } = useNotification();
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const handleLogout = () => {
     // Fire-and-forget the server-side logout.
@@ -17,7 +20,7 @@ const Navbar = () => {
     setAuthSession(null);
     
     navigate('/login');
-    showNotification('Successfully logged out.', 'success');
+    showNotification('성공적으로 로그아웃되었습니다.', 'success');
   };
 
   return (
@@ -31,28 +34,40 @@ const Navbar = () => {
       borderBottom: '1px solid #333'
     }}>
       <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold' }}>
-        Blog
+        블로그
       </Link>
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        {user ? (
-          <>
-            <Link to="/new" className="button">
-              New Post
-            </Link>
-            <button onClick={handleLogout} className="button">
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="button">
-              Login
-            </Link>
-            <Link to="/signup" className="button button-primary">
-              Sign Up
-            </Link>
-          </>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {user && (
+          <input
+            type="search"
+            placeholder="게시글 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="form-input"
+            style={{ width: '250px' }} // Adjust width as needed
+          />
         )}
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {user ? (
+            <>
+              <Link to="/new" className="button">
+                새 게시물
+              </Link>
+              <button onClick={handleLogout} className="button">
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="button">
+                로그인
+              </Link>
+              <Link to="/signup" className="button button-primary">
+                가입하기
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { deletePost } from '../services/postService';
+import { deletePost, incrementPostView } from '../services/postService';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import ReactMarkdown from 'react-markdown';
@@ -12,16 +12,24 @@ function PostDetail() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const { showNotification } = useNotification();
+  const viewIncremented = useRef(false);
+
+  useEffect(() => {
+    if (id && !viewIncremented.current) {
+      incrementPostView(id);
+      viewIncremented.current = true;
+    }
+  }, [id]);
 
   const handleDelete = async () => {
-    const isConfirmed = window.confirm('Are you sure you want to delete this post?');
+    const isConfirmed = window.confirm('이 게시물을 정말로 삭제하시겠습니까?');
     if (isConfirmed) {
       try {
         await deletePost(id);
-        showNotification('Post deleted successfully!', 'success');
+        showNotification('게시물이 성공적으로 삭제되었습니다!', 'success');
         navigate('/');
       } catch (error) {
-        showNotification(`Error deleting post: ${error.message}`, 'error');
+        showNotification(`게시물 삭제 오류: ${error.message}`, 'error');
       }
     }
   };
@@ -29,14 +37,14 @@ function PostDetail() {
   const canModify = (user && post && user.id === post.user_id) || isAdmin;
 
   if (loading) {
-    return <p>Loading post...</p>;
+    return <p>게시물을 불러오는 중...</p>;
   }
 
   if (!post) {
     return (
       <div>
-        <p>Post not found.</p>
-        <Link to="/">Back to list</Link>
+        <p>게시물을 찾을 수 없습니다.</p>
+        <Link to="/">목록으로 돌아가기</Link>
       </div>
     );
   }
@@ -46,7 +54,7 @@ function PostDetail() {
       <article>
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{post.title}</h1>
         <p style={{ color: '#aaa', marginBottom: '2rem' }}>
-          Posted on {new Date(post.created_at).toLocaleDateString(undefined, {
+          작성자: {post.profiles ? post.profiles.username : '익명'} &bull; 작성일 {new Date(post.created_at).toLocaleDateString(undefined, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -54,18 +62,18 @@ function PostDetail() {
         </p>
         
         <div className="post-content" style={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
-          <ReactMarkdown>{post.content || 'This post has no content.'}</ReactMarkdown>
+          <ReactMarkdown>{post.content || '이 게시물에는 내용이 없습니다.'}</ReactMarkdown>
         </div>
 
         <hr style={{ margin: '2rem 0', borderColor: '#333' }} />
 
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Link to="/" className="button">Back to list</Link>
+          <Link to="/" className="button">목록으로 돌아가기</Link>
           {canModify && (
             <>
-              <Link to={`/edit/${id}`} className="button">Edit Post</Link>
+              <Link to={`/edit/${id}`} className="button">게시물 수정</Link>
               <button onClick={handleDelete} className="button button-danger">
-                Delete Post
+                게시물 삭제
               </button>
             </>
           )}

@@ -16,7 +16,7 @@ function Login() {
     try {
       const session = await login(email, password);
       setAuthSession(session);
-      showNotification('Welcome back!', 'success');
+      showNotification('다시 오신 것을 환영합니다!', 'success');
       navigate('/');
     } catch (err) {
       showNotification(err.message, 'error');
@@ -25,12 +25,12 @@ function Login() {
 
   return (
     <div className="form-container">
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Login</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>로그인</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <input
             type="email"
-            placeholder="Email"
+            placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -40,14 +40,14 @@ function Login() {
         <div className="form-group">
           <input
             type="password"
-            placeholder="Password"
+            placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             className="form-input"
           />
         </div>
-        <button type="submit" className="button button-primary" style={{ width: '100%' }}>Login</button>
+        <button type="submit" className="button button-primary" style={{ width: '100%' }}>로그인</button>
       </form>
     </div>
   );

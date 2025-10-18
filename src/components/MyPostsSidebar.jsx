@@ -1,16 +1,29 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { usePosts } from '../hooks/usePosts';
+import { useMyPosts } from '../contexts/PostsContext';
 
 const MyPostsSidebar = () => {
-  const { user } = useAuth();
-  // We pass the userId to our custom hook.
-  // The hook will refetch automatically when userId changes.
-  const { posts: myPosts, loading } = usePosts(undefined, user?.id);
+  const { user, loading: authLoading } = useAuth();
+  const { myPosts, postsLoading } = useMyPosts();
   const location = useLocation();
 
-  
+  if (authLoading) {
+    return (
+      <aside style={{
+        width: '250px',
+        flexShrink: 0,
+        padding: '1rem',
+        backgroundColor: '#1a1a1a',
+        borderRight: '1px solid #333',
+        height: 'calc(100vh - 70px)', // Adjust height based on Navbar
+        overflowY: 'auto'
+      }}>
+<h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>내 게시물</h3>
+        <p>사용자 정보 로딩 중...</p>
+      </aside>
+    );
+  }
 
   if (!user) {
     return null; // Don't render anything if not logged in
@@ -27,10 +40,10 @@ const MyPostsSidebar = () => {
       overflowY: 'auto'
     }}>
       <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>My Posts</h3>
-      {loading ? (
-        <p>Loading...</p>
+      {postsLoading ? (
+        <p>로딩 중...</p>
       ) : myPosts.length === 0 ? (
-        <p style={{ color: '#aaa' }}>You haven't written any posts yet.</p>
+        <p style={{ color: '#aaa' }}>아직 작성한 게시물이 없습니다.</p>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {myPosts.map(post => (

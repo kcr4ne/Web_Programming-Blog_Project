@@ -34,6 +34,26 @@ const authFetch = async (endpoint, options = {}) => {
     return data;
 };
 
+export const getProfile = async (userId) => {
+  if (!userId) return null;
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`[DEBUG] Supabase fetch for getProfile(${userId}) failed:`, error);
+    return null;
+  }
+};
+
 export const signUp = async (email, password) => {
     return await authFetch('signup', {
         method: 'POST',
