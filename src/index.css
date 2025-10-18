@@ -1,0 +1,195 @@
+/* General Body Styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #121212;
+  color: white;
+}
+
+a {
+  color: #bb86fc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Main App Container */
+.App {
+}
+
+/* Button Styles */
+.button {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 1px solid #bb86fc;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #bb86fc;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.button:hover {
+  background-color: rgba(187, 134, 252, 0.1);
+  text-decoration: none;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  background-color: #bb86fc;
+  color: #121212;
+  font-weight: bold;
+}
+
+.button-danger {
+  border-color: #cf6679;
+  color: #cf6679;
+}
+
+.button-danger:hover {
+  background-color: rgba(207, 102, 121, 0.1);
+}
+
+
+/* Form Styles */
+.form-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #aaa;
+}
+
+.form-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.75rem;
+  background: #252525;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+textarea.form-input {
+  min-height: 200px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* Post Content */
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3 {
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.3em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.post-content p {
+  line-height: 1.7;
+}
+
+.post-content a {
+  color: #bb86fc;
+  text-decoration: underline;
+}
+
+.post-content code {
+  background-color: #2d2d2d;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+.post-content pre {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.post-content pre code {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+.post-content blockquote {
+  border-left: 0.25em solid #bb86fc;
+  padding: 0 1em;
+  color: #aaa;
+  margin-left: 0;
+}
+
+.post-content ul,
+.post-content ol {
+  padding-left: 2em;
+}
+
+.post-list {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .post-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .post-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.post-item:hover {
+  transform: translateY(-5px);
+  background-color: #252525;
+}
+
+.post-detail {
+  padding: 2rem;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
