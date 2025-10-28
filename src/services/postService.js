@@ -1,33 +1,46 @@
 import { supabase } from "./supabase.js";
 
-export const getPosts = async (orderBy = "created_at", ascending = false) => {
+const POSTS_PER_PAGE = 12;
+
+export const getPosts = async (orderBy = "created_at", ascending = false, page = 0, searchQuery = '') => {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*, profiles(username)')
-      .order(orderBy, { ascending });
+    const from = page * POSTS_PER_PAGE;
+    const to = from + POSTS_PER_PAGE - 1;
+
+    let query = supabase
+      .from('posts_with_author')
+      .select('*', { count: 'exact' });
+
+    if (searchQuery) {
+      // Search in both title and content
+      query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
+    }
+
+    const { data, error, count } = await query
+      .order(orderBy, { ascending })
+      .range(from, to);
 
     if (error) throw error;
-    return data;
+    return { data, count };
   } catch (error) {
     console.error('Error fetching posts:', error);
-    return [];
+    return { data: [], count: 0 };
   }
 };
 
-export const getPostById = async (id) => {
+export const getPostBySlug = async (slug) => {
   try {
     const { data, error } = await supabase
-      .from('posts')
-      .select('*, profiles(username)')
-      .eq('id', id)
+      .from('posts_with_author')
+      .select(`*`)
+      .eq('slug', slug)
       .single();
 
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error(`[DEBUG] Supabase fetch for getPostById(${id}) failed:`, error);
-    return null;
+    console.error(`[DEBUG] Supabase fetch for getPostBySlug(${slug}) failed:`, error);
+    throw new Error('게시물을 불러오는 데 실패했습니다.');
   }
 };
 

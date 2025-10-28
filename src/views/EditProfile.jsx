@@ -5,7 +5,7 @@ import { updateProfile } from '../services/userService';
 import { updatePassword } from '../services/authService';
 
 const EditProfile = () => {
-  const { user, profile, fetchProfile } = useAuth();
+  const { user, profile, fetchUserProfile } = useAuth();
   const { showNotification } = useNotification();
 
   const [username, setUsername] = useState('');
@@ -51,7 +51,7 @@ const EditProfile = () => {
       }
 
       if (updated) {
-        await fetchProfile(user); // Refresh profile data in context
+        await fetchUserProfile(user); // Refresh profile data in context
         showNotification('프로필이 성공적으로 업데이트되었습니다.', 'success');
         setNewPassword('');
         setConfirmPassword('');

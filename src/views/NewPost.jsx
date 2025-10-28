@@ -26,7 +26,7 @@ function NewPost() {
         const newPost = newPosts[0];
         showNotification('게시물이 성공적으로 작성되었습니다!', 'success');
         addPost(newPost); // Add the new post to the context state
-        navigate(`/post/${newPost.id}`);
+        navigate(`/post/${newPost.slug}`);
       } else {
         throw new Error('게시물을 작성하지 못했습니다. 다시 시도해 주세요.');
       }
@@ -38,8 +38,8 @@ function NewPost() {
   };
 
   return (
-    <main>
-      <h2>새 게시물 작성</h2>
+    <main style={{ maxWidth: '100%', padding: '0 2rem' }}>
+      <h1 style={{ marginTop: 0 }}>새 게시물 작성</h1>
       <PostForm
         onSubmit={handleCreate}
         loading={loading}

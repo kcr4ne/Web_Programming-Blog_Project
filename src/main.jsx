@@ -5,13 +5,16 @@ import './index.css';
 import App from './App.jsx';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
-          <App />
+          <SidebarProvider>
+            <App />
+          </SidebarProvider>
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>

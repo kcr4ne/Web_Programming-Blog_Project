@@ -10,16 +10,10 @@ const PostItem = ({ post }) => {
 
   const hasImage = /!\[.*\]\(.*\)/.test(post.content);
   
-  let previewContent;
-  if (post.summary) {
-    previewContent = post.summary;
-  } else {
-    const snippet = post.content.replace(/(\*\*|__|\*|~|`|>|#|!\[.*\]\(.*\))/g, '').substring(0, 150);
-    previewContent = `${snippet}${post.content.length > 150 ? '...' : ''}`;
-  }
+  const previewContent = post.summary || post.content.replace(/(\*\*|__|\*|~|`|>|#|!\[.*\]\(.*\))/g, '');
 
   return (
-    <Link to={`/post/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/post/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
       <article className="post-item" style={{
         border: '1px solid #333',
         borderRadius: '8px',
@@ -27,15 +21,24 @@ const PostItem = ({ post }) => {
         backgroundColor: '#1e1e1e',
         cursor: 'pointer',
         transition: 'background-color 0.2s ease-in-out, transform 0.2s ease-in-out',
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%', // Ensure article takes full width of the link
+        minHeight: '180px' // Set a minimum height to ensure consistent size
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.75rem' }}>
-          {post.title}
+        <h2 style={{
+          marginTop: 0,
+          marginBottom: '0.5rem',
+          fontSize: '1.75rem'
+        }}>
+          {post.title.length > 16 ? `${post.title.substring(0, 16)}...` : post.title}
         </h2>
+        <hr style={{ border: '0', borderTop: '1px solid #444', margin: '0.5rem 0 1rem' }} />
         <p style={{ fontSize: '0.9rem', color: '#aaa', margin: '0 0 1rem 0' }}>
           {hasImage && '🖼️ • '}
           {postDate} &bull; {post.profiles ? post.profiles.username : '익명'} &bull; {post.views || 0} 조회수
         </p>
-        <p style={{ margin: 0, lineHeight: 1.6 }}>
+        <p className="line-clamp-2" style={{ margin: 0, lineHeight: 1.6, flexGrow: 1 }}>
           {previewContent}
         </p>
       </article>

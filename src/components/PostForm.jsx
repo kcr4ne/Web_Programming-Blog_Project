@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { uploadImage } from '../services/postService';
 import { useNotification } from '../hooks/useNotification';
 
@@ -56,9 +57,8 @@ function PostForm({ initialData = {}, onSubmit, loading, submitButtonText = '제
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label htmlFor="title">제목</label>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <input
           id="title"
           type="text"
@@ -66,32 +66,40 @@ function PostForm({ initialData = {}, onSubmit, loading, submitButtonText = '제
           onChange={(e) => setTitle(e.target.value)}
           required
           className="form-input"
+          placeholder="제목을 입력하세요"
+          style={{ flex: 1, fontSize: '1.5rem', padding: '0.5rem' }}
         />
+        <button type="submit" disabled={loading} className="button button-primary" style={{ height: 'fit-content', alignSelf: 'center' }}>
+          {loading ? '저장 중...' : submitButtonText}
+        </button>
       </div>
-      <div className="form-group">
-        <label htmlFor="summary">요약</label>
-        <textarea
-          id="summary"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          className="form-input"
-          rows="3"
-        />
+      <textarea
+        id="summary"
+        value={summary}
+        onChange={(e) => setSummary(e.target.value)}
+        className="form-input"
+        rows="2"
+        placeholder="요약을 입력하세요 (선택 사항)"
+        style={{ marginBottom: '1rem', resize: 'none' }}
+      />
+      <div style={{ display: 'flex', flex: 1, gap: '1rem', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <label htmlFor="content" style={{ marginBottom: '0.5rem' }}>내용 (이미지 붙여넣기 가능)</label>
+          <textarea
+            id="content"
+            ref={contentRef}
+            value={content}
+            onPaste={handlePaste}
+            onChange={(e) => setContent(e.target.value)}
+            className="form-input"
+            style={{ flex: 1, resize: 'none', borderRight: '1px solid #333' }}
+          />
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 1rem' }}>
+          <h3 style={{ marginTop: 0 }}>미리보기</h3>
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
       </div>
-      <div className="form-group">
-        <label htmlFor="content">내용 (이미지를 붙여넣으세요!)</label>
-        <textarea
-          id="content"
-          ref={contentRef}
-          value={content}
-          onPaste={handlePaste}
-          onChange={(e) => setContent(e.target.value)}
-          className="form-input"
-        />
-      </div>
-      <button type="submit" disabled={loading} className="button button-primary">
-        {loading ? '저장 중...' : submitButtonText}
-      </button>
     </form>
   );
 }

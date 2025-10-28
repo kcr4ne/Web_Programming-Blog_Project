@@ -7,25 +7,25 @@ import ReactMarkdown from 'react-markdown';
 import { usePost } from '../hooks/usePost';
 
 function PostDetail() {
-  const { id } = useParams();
-  const { post, loading } = usePost(id);
+  const { slug } = useParams();
+  const { post, loading } = usePost(slug);
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const { showNotification } = useNotification();
   const viewIncremented = useRef(false);
 
   useEffect(() => {
-    if (id && !viewIncremented.current) {
-      incrementPostView(id);
+    if (post && post.id && !viewIncremented.current) {
+      incrementPostView(post.id);
       viewIncremented.current = true;
     }
-  }, [id]);
+  }, [post]);
 
   const handleDelete = async () => {
     const isConfirmed = window.confirm('이 게시물을 정말로 삭제하시겠습니까?');
     if (isConfirmed) {
       try {
-        await deletePost(id);
+        await deletePost(post.id);
         showNotification('게시물이 성공적으로 삭제되었습니다!', 'success');
         navigate('/');
       } catch (error) {
@@ -54,7 +54,7 @@ function PostDetail() {
       <article>
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{post.title}</h1>
         <p style={{ color: '#aaa', marginBottom: '2rem' }}>
-          작성자: {post.profiles ? post.profiles.username : '익명'} &bull; 작성일 {new Date(post.created_at).toLocaleDateString(undefined, {
+          작성자: {post.username || '익명'} &bull; 작성일 {new Date(post.created_at).toLocaleDateString(undefined, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -71,7 +71,7 @@ function PostDetail() {
           <Link to="/" className="button">목록으로 돌아가기</Link>
           {canModify && (
             <>
-              <Link to={`/edit/${id}`} className="button">게시물 수정</Link>
+              <Link to={`/edit/${post.slug}`} className="button">게시물 수정</Link>
               <button onClick={handleDelete} className="button button-danger">
                 게시물 삭제
               </button>

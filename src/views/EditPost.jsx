@@ -7,11 +7,11 @@ import { useNotification } from '../hooks/useNotification';
 import { usePost } from '../hooks/usePost';
 
 function EditPost() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { showNotification } = useNotification();
-  const { post: initialData, loading: postLoading } = usePost(id);
+  const { post: initialData, loading: postLoading } = usePost(slug);
   const [formLoading, setFormLoading] = useState(false);
 
   // Security check: Redirect if not the author or admin
@@ -29,9 +29,9 @@ function EditPost() {
   const handleUpdate = async (postData) => {
     try {
       setFormLoading(true);
-      await updatePost(id, postData);
+      await updatePost(initialData.id, postData);
       showNotification('게시물이 성공적으로 업데이트되었습니다!', 'success');
-      navigate(`/post/${id}`);
+      navigate(`/post/${initialData.slug}`);
     } catch (error) {
       showNotification(`게시물 업데이트 오류: ${error.message}`, 'error');
     } finally {

@@ -1,39 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPosts, getPostsByUserId } from '../services/postService';
+import { getPosts } from '../services/postService';
 import { useNotification } from './useNotification';
 
-/**
- * Custom hook to fetch posts.
- * @param {string} [sortBy] - The field to sort by (e.g., 'created_at', 'views').
- * @param {string} [userId] - The ID of the user to fetch posts for. If provided, fetches posts for that user.
- * @param {boolean} [enabled=true] - Whether the query is enabled and should run.
- */
-export const usePosts = (sortBy, userId, enabled = true) => {
+export const usePosts = (sortBy, searchQuery) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const { showNotification } = useNotification();
 
-  const fetchPosts = useCallback(async () => {
-    if (!enabled) {
-      setPosts([]);
-      setLoading(false);
-      return;
-    }
-
+  const fetchPosts = useCallback(async (page) => {
     try {
       setLoading(true);
       setError(null);
       
-      let data;
-      if (userId) {
-        data = await getPostsByUserId(userId);
-      } else {
-        const ascending = false; // Always descending for now
-        data = await getPosts(sortBy, ascending);
-      }
+      const ascending = false;
+      const { data, count } = await getPosts(sortBy, ascending, page, searchQuery);
       
       setPosts(data);
+      setTotalCount(count);
     } catch (err) {
       setError(err);
       showNotification('Error fetching posts.', 'error');
@@ -41,15 +27,16 @@ export const usePosts = (sortBy, userId, enabled = true) => {
     } finally {
       setLoading(false);
     }
-  }, [sortBy, userId, showNotification, enabled]);
+  }, [sortBy, searchQuery, showNotification]);
 
-  const addPost = (post) => {
-    setPosts(prevPosts => [post, ...prevPosts]);
-  };
+  // Reset to page 0 when search query changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchQuery]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchPosts(currentPage);
+  }, [fetchPosts, currentPage]);
 
-  return { posts, loading, error, refetch: fetchPosts, addPost };
+  return { posts, loading, error, refetch: () => fetchPosts(currentPage), totalCount, currentPage, setCurrentPage };
 };

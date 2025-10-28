@@ -39,7 +39,7 @@ export const getProfile = async (userId) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('*') // Select all profile data
       .eq('id', userId)
       .single();
 
@@ -62,8 +62,6 @@ export const signUp = async (email, password) => {
 };
 
 export const login = async (email, password) => {
-    // This function now only does one thing:
-    // it calls the auth endpoint and returns the data.
     const data = await authFetch('token?grant_type=password', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
@@ -72,8 +70,6 @@ export const login = async (email, password) => {
 };
 
 export const logout = async () => {
-    // The logic is now handled by the AuthContext and Navbar
-    // This function can be left empty or just ensure server-side logout is called
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session?.access_token) {
@@ -82,6 +78,14 @@ export const logout = async () => {
             headers: { 'Authorization': `Bearer ${session.access_token}` }
         }).catch(err => console.error("Server-side logout failed:", err));
     }
+};
+
+export const updatePassword = async (newPassword) => {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    throw error;
+  }
+  return data;
 };
 
 export const getUser = () => {
