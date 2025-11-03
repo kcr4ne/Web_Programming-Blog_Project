@@ -1,24 +1,35 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useMyPosts } from '../contexts/PostsContext';
+import { useMyPosts } from '../hooks/useMyPosts';
+import { useSidebar } from '../hooks/useSidebar';
 
 const MyPostsSidebar = () => {
   const { user, loading: authLoading } = useAuth();
   const { myPosts, postsLoading } = useMyPosts();
+  const { isSidebarVisible } = useSidebar();
+
+  const sidebarStyle = {
+    width: '250px',
+    flexShrink: 0,
+    padding: '1rem',
+    backgroundColor: '#000000',
+    borderRight: '1px solid #333',
+    overflowY: 'auto',
+    position: 'fixed',
+    top: '70px',
+    left: 0,
+    height: 'calc(100vh - 70px)',
+    transform: isSidebarVisible ? 'translateX(0)' : 'translateX(-100%)',
+    transition: 'transform 0.3s ease-in-out',
+    zIndex: 1000,
+  };
 
   if (authLoading) {
     return (
-      <aside style={{
-        width: '250px',
-        flexShrink: 0,
-        padding: '1rem',
-        backgroundColor: '#1a1a1a',
-        borderRight: '1px solid #333',
-        overflowY: 'auto'
-      }}>
+      <aside style={sidebarStyle} className="custom-scrollbar">
 <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>내 게시물</h3>
-        <p>사용자 정보 로딩 중...</p>
+        <p>사용자 정보를 불러오는 중...</p>
       </aside>
     );
   }
@@ -28,17 +39,10 @@ const MyPostsSidebar = () => {
   }
 
   return (
-    <aside style={{
-      width: '250px',
-      flexShrink: 0,
-      padding: '1rem',
-      backgroundColor: '#1a1a1a',
-      borderRight: '1px solid #333',
-      overflowY: 'auto'
-    }}>
-      <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>My Posts</h3>
+    <aside style={sidebarStyle} className="custom-scrollbar">
+      <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>내 게시물</h3>
       {postsLoading ? (
-        <p>로딩 중...</p>
+        <p>게시물을 불러오는 중...</p>
       ) : myPosts.length === 0 ? (
         <p style={{ color: '#aaa' }}>아직 작성한 게시물이 없습니다.</p>
       ) : (
@@ -46,7 +50,8 @@ const MyPostsSidebar = () => {
           {myPosts.map(post => (
             <li key={post.id}>
               <NavLink
-                to={`/post/${post.slug}`}
+                to={`/post/${post.slug || post.id}`}
+                end // Add this prop
                 style={({ isActive }) => ({
                   color: isActive ? '#bb86fc' : 'inherit',
                   fontWeight: isActive ? 'bold' : 'normal',

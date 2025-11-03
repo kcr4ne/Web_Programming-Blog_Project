@@ -3,7 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2025-10-12
 
 ## Active Technologies
-- JavaScript (ES2022), SQL (PostgreSQL 15) + React, Supabase-js (001-react-supabase-gemini)
+- JavaScript (ES2022), SQL (PostgreSQL 15) + React, Firebase (001-react-firebase-gemini)
 
 ## Project Structure
 ```
@@ -18,7 +18,7 @@ npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNO
 JavaScript (ES2022), SQL (PostgreSQL 15): Follow standard conventions
 
 ## Recent Changes
-- 001-react-supabase-gemini: Added JavaScript (ES2022), SQL (PostgreSQL 15) + React, Supabase-js
+- 001-react-firebase-gemini: Added JavaScript (ES2022), SQL (PostgreSQL 15) + React, Firebase
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

@@ -1,42 +1,51 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPosts } from '../services/postService';
-import { useNotification } from './useNotification';
+import { getPosts, getPostsCount } from '../services/postService';
 
-export const usePosts = (sortBy, searchQuery) => {
+const POSTS_PER_PAGE = 12;
+
+export const usePosts = (orderByField = 'createdAt') => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const { showNotification } = useNotification();
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchPosts = useCallback(async (page) => {
+  // Fetch total count to calculate total pages
+  useEffect(() => {
+    setLoading(true);
+    getPostsCount().then(count => {
+      const total = Math.ceil(count / POSTS_PER_PAGE);
+      setTotalPages(total > 0 ? total : 1);
+      setLoading(false);
+    });
+  }, []);
+
+  const fetchPage = useCallback(async (page) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
-      const ascending = false;
-      const { data, count } = await getPosts(sortBy, ascending, page, searchQuery);
-      
+      const { data } = await getPosts(orderByField, page);
       setPosts(data);
-      setTotalCount(count);
     } catch (err) {
+      console.error("Error fetching posts:", err);
       setError(err);
-      showNotification('Error fetching posts.', 'error');
-      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [sortBy, searchQuery, showNotification]);
+  }, [orderByField]);
 
-  // Reset to page 0 when search query changes
+  // Fetch posts when page or sorting changes
   useEffect(() => {
-    setCurrentPage(0);
-  }, [searchQuery]);
+    fetchPage(currentPage);
+  }, [currentPage, fetchPage]);
 
-  useEffect(() => {
-    fetchPosts(currentPage);
-  }, [fetchPosts, currentPage]);
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) {
+      return;
+    }
+    setCurrentPage(newPage);
+  }
 
-  return { posts, loading, error, refetch: () => fetchPosts(currentPage), totalCount, currentPage, setCurrentPage };
+  return { posts, loading, error, currentPage, totalPages, handlePageChange, setPosts }; // Expose setPosts
 };

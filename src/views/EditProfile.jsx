@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { updateProfile } from '../services/userService';
-import { updatePassword } from '../services/authService';
+import { updatePassword, getProfile } from '../services/authService';
 
 const EditProfile = () => {
-  const { user, profile, fetchUserProfile } = useAuth();
+  const { user, profile, setAuthSession } = useAuth();
   const { showNotification } = useNotification();
 
   const [username, setUsername] = useState('');
@@ -40,7 +40,7 @@ const EditProfile = () => {
 
       // 1. Update username if changed
       if (username !== profile.username) {
-        await updateProfile(user.id, { username });
+        await updateProfile(user.uid, { username: username });
         updated = true;
       }
 
@@ -51,7 +51,9 @@ const EditProfile = () => {
       }
 
       if (updated) {
-        await fetchUserProfile(user); // Refresh profile data in context
+        // Refresh profile data in AuthContext
+        const updatedProfileData = await getProfile(user.uid);
+        setAuthSession(user, updatedProfileData);
         showNotification('프로필이 성공적으로 업데이트되었습니다.', 'success');
         setNewPassword('');
         setConfirmPassword('');
@@ -82,16 +84,6 @@ const EditProfile = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="form-input"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">이메일 (변경 불가)</label>
-          <input
-            id="email"
-            type="email"
-            value={user.email}
-            disabled
             className="form-input"
           />
         </div>

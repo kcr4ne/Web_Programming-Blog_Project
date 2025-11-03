@@ -1,93 +1,111 @@
-import { supabase } from './supabase';
+import { auth, db } from './firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword as firebaseUpdatePassword,
+  onAuthStateChanged,
+} from 'firebase/auth';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const signUp = async (username, password) => {
+  try {
+    // 1. Check if username already exists in Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
 
-// Helper for auth fetch calls
-const authFetch = async (endpoint, options = {}) => {
-    if (!supabaseUrl || !supabaseAnonKey) {
-        console.error('[DEBUG] Missing Supabase URL or Key for auth fetch.');
-        throw new Error('Missing Supabase URL or Key');
+    if (!querySnapshot.empty) {
+      throw new Error("이미 존재하는 사용자 이름입니다.");
     }
 
-    const response = await fetch(`${supabaseUrl}/auth/v1/${endpoint}`, {
-        ...options,
-        headers: {
-            'apikey': supabaseAnonKey,
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
+    // 2. Generate a dummy email for Firebase Auth
+    const dummyEmail = `${username}@blogkyle.com`; // Use a domain you control or a dummy one
+
+    // 3. Create user in Firebase Auth with dummy email
+    const userCredential = await createUserWithEmailAndPassword(auth, dummyEmail, password);
+    const user = userCredential.user;
+
+    // 4. Create a user profile in Firestore with actual username and dummy email
+    await setDoc(doc(db, "users", user.uid), {
+      email: dummyEmail,
+      username: username,
+      role: 'user', // Default role
+      createdAt: new Date(),
     });
 
-    // For logout, no content is returned on success
-    if (response.status === 204) {
-        return null;
+    return user;
+  } catch (error) {
+    console.error("Error signing up:", error);
+    throw error;
+  }
+};
+
+export const login = async (username, password) => {
+  try {
+    // 1. Find the user's dummy email using their username from Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error("사용자를 찾을 수 없습니다.");
     }
 
-    const data = await response.json();
+    const userData = querySnapshot.docs[0].data();
+    const dummyEmail = userData.email; // This is the dummy email stored during signup
 
-    if (!response.ok) {
-        console.error(`[DEBUG] Auth fetch error for endpoint ${endpoint}:`, data);
-        throw new Error(data.error_description || data.msg || 'An authentication error occurred.');
-    }
+    // 2. Log in with the dummy email and provided password
+    const userCredential = await signInWithEmailAndPassword(auth, dummyEmail, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
 
-    return data;
+export const logout = async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Error logging out:", error);
+    throw error;
+  }
+};
+
+export const updatePassword = async (newPassword) => {
+  try {
+    await firebaseUpdatePassword(auth.currentUser, newPassword);
+    return { message: "Password updated successfully" };
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw error;
+  }
+};
+
+export const getUser = () => {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
 };
 
 export const getProfile = async (userId) => {
   if (!userId) return null;
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*') // Select all profile data
-      .eq('id', userId)
-      .single();
+    const docRef = doc(db, "users", userId);
+    const docSnap = await getDoc(docRef);
 
-    if (error) {
-      throw error;
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.log("No such user profile!");
+      return null;
     }
-
-    return data;
   } catch (error) {
-    console.error(`[DEBUG] Supabase fetch for getProfile(${userId}) failed:`, error);
+    console.error(`Error fetching user profile for ${userId}:`, error);
     return null;
   }
-};
-
-export const signUp = async (email, password) => {
-    return await authFetch('signup', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-    });
-};
-
-export const login = async (email, password) => {
-    const data = await authFetch('token?grant_type=password', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-    });
-    return data;
-};
-
-export const logout = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session?.access_token) {
-        authFetch('logout', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${session.access_token}` }
-        }).catch(err => console.error("Server-side logout failed:", err));
-    }
-};
-
-export const updatePassword = async (newPassword) => {
-  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) {
-    throw error;
-  }
-  return data;
-};
-
-export const getUser = () => {
-  return supabase.auth.getUser();
 };

@@ -1,35 +1,40 @@
-import { supabase } from './supabase';
+import { db } from './firebase';
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  doc,
+  query,
+} from 'firebase/firestore';
 
 /**
- * Fetches all user profiles from the database by calling the
- * 'get_all_users_as_admin' RPC function. This function should only
- * succeed if called by a user with the 'admin' role.
+ * Fetches all user profiles from the 'users' collection in Firestore.
+ * Role-based access control should be handled by Firebase Security Rules.
  */
 export const getAllUsers = async () => {
-  // Call the RPC function instead of a direct select
-  const { data, error } = await supabase.rpc('get_all_users_as_admin');
-
-  if (error) {
+  try {
+    const usersCollectionRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersCollectionRef);
+    const users = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return users;
+  } catch (error) {
     console.error('Error fetching all users:', error);
-    throw new Error(error.message);
+    throw new Error('사용자 목록을 불러오는 데 실패했습니다.');
   }
-
-  return data;
 };
 
 export const updateProfile = async (userId, updates) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === '23505') { // Unique violation on username
-      throw new Error('이미 사용 중인 아이디입니다.');
-    }
-    throw error;
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await updateDoc(userDocRef, updates);
+    return { id: userId, ...updates };
+  } catch (error) {
+    console.error(`Error updating user profile (${userId}):`, error);
+    // Firebase Firestore errors for unique constraints are not as direct as Supabase.
+    // You might need to implement custom logic or Cloud Functions for more complex validation.
+    throw new Error('프로필 업데이트에 실패했습니다.');
   }
-  return data;
 };

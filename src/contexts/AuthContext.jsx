@@ -1,81 +1,43 @@
-import { createContext, useEffect, useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { auth } from '../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { getProfile } from '../services/authService';
-
-const AuthContext = createContext();
-
-const SUPABASE_AUTH_KEY = 'sb-vndlucbrusifyvhgxcdv-auth-token';
+import { AuthContext } from './Auth';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null); // Add profile state
+  const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = useCallback(async (user) => {
-    if (!user) {
-      setIsAdmin(false);
-      setProfile(null);
-      return;
-    }
-    try {
-      const profileData = await getProfile(user.id);
-      setProfile(profileData);
-      if (profileData && profileData.role === 'admin') {
-        setIsAdmin(true);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+
+      if (currentUser) {
+        const profileData = await getProfile(currentUser.uid);
+        setProfile(profileData);
+        setIsAdmin(profileData?.role === 'admin');
       } else {
+        setProfile(null);
         setIsAdmin(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch user profile", error);
-      setIsAdmin(false);
-      setProfile(null);
-    }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    try {
-      const sessionStr = window.localStorage.getItem(SUPABASE_AUTH_KEY);
-      if (sessionStr) {
-        const session = JSON.parse(sessionStr);
-        if (session.user && session.access_token) {
-          setUser(session.user);
-          fetchUserProfile(session.user);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to parse session from localStorage", error);
-    }
-    setLoading(false);
-  }, [fetchUserProfile]);
-
-  const setAuthSession = useCallback(async (session) => {
-    if (session) {
-      window.localStorage.setItem(SUPABASE_AUTH_KEY, JSON.stringify(session));
-      setUser(session.user);
-      await fetchUserProfile(session.user);
-    } else {
-      window.localStorage.removeItem(SUPABASE_AUTH_KEY);
-      setUser(null);
-      setIsAdmin(false);
-      setProfile(null);
-    }
-  }, [fetchUserProfile]);
-
-  const value = {
-    user,
-    profile, // Provide profile in context
-    isAdmin,
-    loading,
-    setAuthSession,
-    fetchUserProfile, // Provide fetch function
-    setUser: (newUser) => {
-        if (!newUser) {
-            setAuthSession(null);
-        }
-    }
+  const getFreshToken = async () => {
+    if (!auth.currentUser) return null;
+    return auth.currentUser.getIdToken(true);
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  const value = { user, profile, isAdmin, loading, getFreshToken }; // Add getFreshToken
 
-export default AuthContext;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

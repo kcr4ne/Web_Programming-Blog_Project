@@ -1,8 +1,7 @@
-import React, { createContext, useState, useContext } from 'react';
+import { useState } from 'react';
+import { SearchContext } from './Search';
 
-const SearchContext = createContext();
 
-export const useSearch = () => useContext(SearchContext);
 
 export const SearchProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');

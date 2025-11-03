@@ -1,29 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPostBySlug } from '../services/postService';
+import { getPostBySlug, getPostById } from '../services/postService';
 import { useNotification } from './useNotification';
 
-export const usePost = (postSlug) => {
+export const usePost = (slugOrId) => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { showNotification } = useNotification();
 
   const fetchPost = useCallback(async () => {
-    if (!postSlug) return;
-    
+    if (!slugOrId) return;
+
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const data = await getPostBySlug(postSlug);
+      // Try fetching by slug first
+      const data = await getPostBySlug(slugOrId);
       setPost(data);
-    } catch (err) {
-      setError(err);
-      showNotification('Error fetching post.', 'error');
-      console.error(err);
+    } catch (slugError) {
+      // If slug fails, try fetching by ID
+      try {
+        const data = await getPostById(slugOrId);
+        setPost(data);
+      } catch (idError) {
+        const finalError = new Error('게시물을 불러오는 데 실패했습니다.');
+        setError(finalError);
+        showNotification(finalError.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
-  }, [postSlug, showNotification]);
+  }, [slugOrId, showNotification]);
 
   useEffect(() => {
     fetchPost();

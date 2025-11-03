@@ -2,7 +2,7 @@
 웹 프로그래밍 실무 웹 개발 수행평가
 
 ## 📖 프로젝트 소개 (About)
-이 프로젝트는 React와 Supabase를 사용하여 구축한 블로그 플랫폼입니다. 사용자 인증, 게시물 CRUD(생성, 읽기, 수정, 삭제), 마크다운 편집 기능을 제공하며, Vite를 통해 빠른 개발 환경을 구성했습니다.
+이 프로젝트는 React와 Firebase를 사용하여 구축한 블로그 플랫폼입니다. 사용자 인증, 게시물 CRUD(생성, 읽기, 수정, 삭제), 마크다운 편집 기능을 제공하며, Vite를 통해 빠른 개발 환경을 구성했습니다.
 
 ---
 
@@ -16,10 +16,10 @@
 - **Language:** JavaScript (ES2022)
 
 ### Backend & Database
-- **Backend-as-a-Service (BaaS):** [Supabase](https://supabase.io/)
-  - **Authentication:** Supabase Auth
-  - **Database:** Supabase (PostgreSQL)
-  - **Storage:** Supabase Storage
+- **Backend-as-a-Service (BaaS):** [Firebase](https://firebase.google.com/)
+  - **Authentication:** Firebase Authentication
+  - **Database:** Firestore
+  - **Storage:** Firebase Storage
 
 ### Development Tools
 - **Linting:** [ESLint](https://eslint.org/)
@@ -52,9 +52,9 @@
 │   └── ...
 │
 ├── services/    # 외부 API 및 서비스 연동 로직
-│   ├── supabase.js        # Supabase 클라이언트 초기화
-│   ├── authService.js     # Supabase 인증 API 호출
-│   └── postService.js     # Supabase DB (posts 테이블) API 호출
+│   ├── firebase.js        # Firebase 클라이언트 초기화
+│   ├── authService.js     # Firebase 인증 API 호출
+│   └── postService.js     # Firestore (posts 컬렉션) API 호출
 │
 └── views/       # 페이지 단위의 컴포넌트 (라우팅 단위)
     ├── PostList.jsx       # 메인 페이지 (게시글 목록)
@@ -83,13 +83,9 @@
     npm install
     ```
 
-3.  **Set up Supabase:**
-    - Create a `.env` file in the root directory.
-    - Add your Supabase project URL and anon key:
-      ```
-      VITE_SUPABASE_URL=your-supabase-url
-      VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-      ```
+3.  **Set up Firebase:**
+    - Create a `serviceAccountKey.json` file in the root directory.
+    - Add your Firebase project credentials.
 
 ### Running the Development Server
 

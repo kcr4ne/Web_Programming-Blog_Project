@@ -1,8 +1,7 @@
-import React, { createContext, useState, useContext } from 'react';
+import { useState } from 'react';
+import { SidebarContext } from './Sidebar';
 
-const SidebarContext = createContext();
 
-export const useSidebar = () => useContext(SidebarContext);
 
 export const SidebarProvider = ({ children }) => {
   const [isSidebarVisible, setSidebarVisible] = useState(true);

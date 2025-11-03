@@ -2,18 +2,18 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const PostItem = ({ post }) => {
-  const postDate = new Date(post.created_at).toLocaleDateString(undefined, {
+  const postDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  }) : '날짜 없음';
 
   const hasImage = /!\[.*\]\(.*\)/.test(post.content);
   
   const previewContent = post.summary || post.content.replace(/(\*\*|__|\*|~|`|>|#|!\[.*\]\(.*\))/g, '');
 
   return (
-    <Link to={`/post/${post.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
+    <Link to={`/post/${post.slug || post.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
       <article className="post-item" style={{
         border: '1px solid #333',
         borderRadius: '8px',
@@ -36,7 +36,7 @@ const PostItem = ({ post }) => {
         <hr style={{ border: '0', borderTop: '1px solid #444', margin: '0.5rem 0 1rem' }} />
         <p style={{ fontSize: '0.9rem', color: '#aaa', margin: '0 0 1rem 0' }}>
           {hasImage && '🖼️ • '}
-          {postDate} &bull; {post.profiles ? post.profiles.username : '익명'} &bull; {post.views || 0} 조회수
+          {postDate} &bull; {post.profiles?.username || post.profiles?.email || '익명'} &bull; {post.views || 0} 조회수
         </p>
         <p className="line-clamp-2" style={{ margin: 0, lineHeight: 1.6, flexGrow: 1 }}>
           {previewContent}

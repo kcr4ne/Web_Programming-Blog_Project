@@ -34,7 +34,7 @@ function PostDetail() {
     }
   };
 
-  const canModify = (user && post && user.id === post.user_id) || isAdmin;
+  const canModify = (user && post && user.uid === post.authorId) || isAdmin;
 
   if (loading) {
     return <p>게시물을 불러오는 중...</p>;
@@ -49,16 +49,20 @@ function PostDetail() {
     );
   }
 
+  const postDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }) : '날짜 없음';
+
+  const authorName = post.profiles?.username || post.profiles?.email || '익명';
+
   return (
     <main className="post-detail">
       <article>
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{post.title}</h1>
         <p style={{ color: '#aaa', marginBottom: '2rem' }}>
-          작성자: {post.username || '익명'} &bull; 작성일 {new Date(post.created_at).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+          작성자: {authorName} &bull; 작성일: {postDate}
         </p>
         
         <div className="post-content" style={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
@@ -71,7 +75,7 @@ function PostDetail() {
           <Link to="/" className="button">목록으로 돌아가기</Link>
           {canModify && (
             <>
-              <Link to={`/edit/${post.slug}`} className="button">게시물 수정</Link>
+              <Link to={`/edit/${post.slug || post.id}`} className="button">게시물 수정</Link>
               <button onClick={handleDelete} className="button button-danger">
                 게시물 삭제
               </button>

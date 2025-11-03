@@ -1,43 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { uploadImage } from '../services/postService';
 import { useNotification } from '../hooks/useNotification';
+import { useAuth } from '../hooks/useAuth';
 
-function PostForm({ initialData = {}, onSubmit, loading, submitButtonText = '제출' }) {
-  const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
-  const [content, setContent] = useState('');
+// The form no longer needs the `loading` prop from the parent.
+function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
+  const [title, setTitle] = useState(initialData.title || '');
+  const [summary, setSummary] = useState(initialData.summary || '');
+  const [content, setContent] = useState(initialData.content || '');
+  
+  // Internal loading state to control the submit button
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const contentRef = useRef(null);
   const { showNotification } = useNotification();
-
-  useEffect(() => {
-    if (initialData && initialData.id) {
-      setTitle(initialData.title || '');
-      setSummary(initialData.summary || '');
-      setContent(initialData.content || '');
-    }
-  }, [initialData]);
+  const { user, getFreshToken } = useAuth();
 
   const handlePaste = async (e) => {
+    if (isSubmitting) return;
     const imageFile = Array.from(e.clipboardData.files).find(file => file.type.startsWith('image/'));
     if (!imageFile) return;
-
     e.preventDefault();
-    const placeholder = `
-![이미지 업로드 중 ${imageFile.name}...]()
-`;
+    const placeholder = `\n![이미지 업로드 중 ${imageFile.name}...]()\n`;
     const textarea = contentRef.current;
     const cursorPosition = textarea.selectionStart;
-
     const newContent = `${content.substring(0, cursorPosition)}${placeholder}${content.substring(cursorPosition)}`;
     setContent(newContent);
-
     try {
       showNotification('이미지 업로드 중...', 'info');
-      const imageUrl = await uploadImage(imageFile);
-      const finalMarkdown = `
-![${imageFile.name}](${imageUrl})
-`;
+      const token = await getFreshToken();
+      if (!token) throw new Error('인증 토큰을 가져올 수 없습니다.');
+      const imageUrl = await uploadImage(imageFile, token);
+      const finalMarkdown = `\n![${imageFile.name}](${imageUrl})\n`;
       setContent(currentContent => currentContent.replace(placeholder, finalMarkdown));
       showNotification('이미지가 성공적으로 업로드되었습니다!', 'success');
     } catch (error) {
@@ -47,17 +42,27 @@ function PostForm({ initialData = {}, onSubmit, loading, submitButtonText = '제
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+
     if (!title) {
       showNotification('제목은 필수입니다.', 'error');
       return;
     }
-    onSubmit({ title, summary, content });
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit({ title, summary, content });
+    } catch (error) {
+      // Parent component will show notification, but we must re-enable the form.
+      setIsSubmitting(false);
+    }
+    // On success, the parent component will navigate away, so we don't need to set isSubmitting to false here.
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <input
           id="title"
@@ -69,8 +74,8 @@ function PostForm({ initialData = {}, onSubmit, loading, submitButtonText = '제
           placeholder="제목을 입력하세요"
           style={{ flex: 1, fontSize: '1.5rem', padding: '0.5rem' }}
         />
-        <button type="submit" disabled={loading} className="button button-primary" style={{ height: 'fit-content', alignSelf: 'center' }}>
-          {loading ? '저장 중...' : submitButtonText}
+        <button type="submit" disabled={isSubmitting} className="button button-primary" style={{ height: 'fit-content', alignSelf: 'center' }}>
+          {isSubmitting ? '처리 중...' : submitButtonText}
         </button>
       </div>
       <textarea

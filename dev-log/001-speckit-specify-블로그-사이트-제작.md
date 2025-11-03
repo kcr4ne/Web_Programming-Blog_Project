@@ -6,7 +6,7 @@
 
 ## 사용자 요구사항
 
-사용자는 React와 Supabase를 기반으로, 블랙 테마의 블로그 사이트 제작을 요청했습니다. 주요 기능은 다음과 같습니다:
+사용자는 React와 Firebase를 기반으로, 블랙 테마의 블로그 사이트 제작을 요청했습니다. 주요 기능은 다음과 같습니다:
 - 게시글 목록 조회 및 정렬 (최신순, 인기순)
 - 사용자 인증 (회원가입, 로그인) 및 강력한 보안 적용
 - 로그인한 사용자만 게시글 작성 가능
@@ -16,7 +16,7 @@
 
 ## 진행 과정
 
-1.  **브랜치 및 파일 생성**: `create-new-feature.sh` 스크립트를 실행하여 `001-react-supabase-gemini` 브랜치와 관련 명세서 파일(`spec.md`)을 생성했습니다.
+1.  **브랜치 및 파일 생성**: `create-new-feature.sh` 스크립트를 실행하여 `001-react-firebase-gemini` 브랜치와 관련 명세서 파일(`spec.md`)을 생성했습니다.
 2.  **명세서 초안 작성**: `spec-template.md`를 기반으로 사용자의 요구사항을 정리하여 명세서 초안을 작성했습니다.
 3.  **품질 체크리스트 생성**: 명세서의 품질을 검증하기 위한 `checklists/requirements.md` 파일을 생성했습니다.
 4.  **요구사항 명확화**: 명세서 내용 중 불분명한 세 가지(일반 보안, 관리자 보안, 최초 관리자 지정 방식)에 대해 사용자에게 질문했습니다.
@@ -29,6 +29,6 @@
 
 ## 산출물
 
-- **Git 브랜치**: `001-react-supabase-gemini`
-- **명세서 파일**: `specs/001-react-supabase-gemini/spec.md`
-- **체크리스트 파일**: `specs/001-react-supabase-gemini/checklists/requirements.md`
+- **Git 브랜치**: `001-react-firebase-gemini`
+- **명세서 파일**: `specs/001-react-firebase-gemini/spec.md`
+- **체크리스트 파일**: `specs/001-react-firebase-gemini/checklists/requirements.md`

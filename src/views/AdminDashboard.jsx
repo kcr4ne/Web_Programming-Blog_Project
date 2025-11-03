@@ -39,20 +39,20 @@ const AdminDashboard = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #ccc' }}>
-              <th style={{ padding: '8px', textAlign: 'left' }}>Username</th>
-              <th style={{ padding: '8px', textAlign: 'left' }}>Email</th>
-              <th style={{ padding: '8px', textAlign: 'left' }}>Role</th>
-              <th style={{ padding: '8px', textAlign: 'left' }}>Joined Date</th>
+              <th style={{ padding: '8px', textAlign: 'left' }}>사용자명</th>
+              <th style={{ padding: '8px', textAlign: 'left' }}>이메일</th>
+              <th style={{ padding: '8px', textAlign: 'left' }}>역할</th>
+              <th style={{ padding: '8px', textAlign: 'left' }}>가입일</th>
             </tr>
           </thead>
           <tbody>
             {users.map(user => (
               <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '8px' }}>{user.username || 'N/A'}</td>
+                <td style={{ padding: '8px' }}>{user.username || '없음'}</td>
                 <td style={{ padding: '8px' }}>{user.email}</td>
-                <td style={{ padding: '8px' }}>{user.role || 'user'}</td>
+                <td style={{ padding: '8px' }}>{user.role || '사용자'}</td>
                 <td style={{ padding: '8px' }}>
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : '없음'}
                 </td>
               </tr>
             ))}

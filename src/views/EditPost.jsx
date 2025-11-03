@@ -11,50 +11,53 @@ function EditPost() {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { showNotification } = useNotification();
-  const { post: initialData, loading: postLoading } = usePost(slug);
-  const [formLoading, setFormLoading] = useState(false);
-
-  // Security check: Redirect if not the author or admin
-  useEffect(() => {
-    if (authLoading || postLoading) return;
-
-    const isOwner = initialData && user && user.id === initialData.user_id;
-
-    if (!user || (!isOwner && !isAdmin)) {
-      showNotification('이 게시물을 수정할 권한이 없습니다.', 'error');
-      navigate('/');
-    }
-  }, [user, initialData, authLoading, postLoading, navigate, showNotification, isAdmin]);
+  
+  const { post, loading: postLoading } = usePost(slug);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdate = async (postData) => {
+    if (!post || !post.id) return;
+    setIsUpdating(true);
     try {
-      setFormLoading(true);
-      await updatePost(initialData.id, postData);
+      const updatedPost = await updatePost(post.id, postData);
       showNotification('게시물이 성공적으로 업데이트되었습니다!', 'success');
-      navigate(`/post/${initialData.slug}`);
+      navigate(`/post/${updatedPost.slug || post.id}`);
     } catch (error) {
       showNotification(`게시물 업데이트 오류: ${error.message}`, 'error');
-    } finally {
-      setFormLoading(false);
+      setIsUpdating(false);
     }
   };
 
-  if (authLoading || postLoading || !initialData) {
-    return <p>로딩 및 확인 중...</p>;
-  }
+  useEffect(() => {
+    if (authLoading || postLoading) return;
+    if (!post) {
+      showNotification('수정할 게시물을 찾을 수 없습니다.', 'error');
+      navigate('/');
+      return;
+    }
+    const isOwner = user && user.uid === post.authorId;
+    if (!isOwner && !isAdmin) {
+      showNotification('이 게시물을 수정할 권한이 없습니다.', 'error');
+      navigate('/');
+    }
+  }, [authLoading, postLoading, post, user, isAdmin, navigate, showNotification]);
 
-  // Final check to ensure the correct user is editing
-  if (!user || (user.id !== initialData.user_id && !isAdmin)) {
-    return <p>사용자 확인 중...</p>;
+  if (postLoading || authLoading || !post) {
+    return <p>게시물 정보를 불러오고 권한을 확인하는 중...</p>;
+  }
+  
+  const isOwner = user && user.uid === post.authorId;
+  if (!isOwner && !isAdmin) {
+      return <p>권한이 없어 페이지를 이동합니다...</p>;
   }
 
   return (
     <main>
-      <h2>게시물 수정</h2>
+      <h2 style={{ marginTop: 0, marginBottom: '2rem' }}>게시물 수정</h2>
       <PostForm
-        initialData={initialData}
+        initialData={post}
         onSubmit={handleUpdate}
-        loading={formLoading}
+        loading={isUpdating}
         submitButtonText="게시물 업데이트"
       />
     </main>
