@@ -11,6 +11,8 @@ import SignUp from './views/SignUp';
 import Login from './views/Login';
 import EditProfile from './views/EditProfile';
 import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboard from './views/AdminDashboard';
 import { PostsProvider } from './contexts/PostsContext';
 import { SearchProvider } from './contexts/SearchContext';
 import { useSidebar } from './hooks/useSidebar';
@@ -37,6 +39,9 @@ const MainLayout = () => {
             <Route path="/new" element={<NewPost />} />
             <Route path="/edit/:slug" element={<EditPost />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+          </Route>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Route>
         </Routes>
       </main>

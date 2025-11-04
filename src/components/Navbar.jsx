@@ -86,7 +86,6 @@ const Navbar = () => {
         display: 'flex',
         alignItems: 'center',
         padding: '0.5rem 2rem',
-        backgroundColor: '#000000',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           {user && (

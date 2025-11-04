@@ -87,7 +87,39 @@ export const getPosts = async (orderByField, page = 1) => {
   }
 };
 
-// ... (the rest of the file remains the same)
+// Get all posts without pagination (for search)
+export const getAllPosts = async (orderByField = 'createdAt') => {
+  try {
+    const q = query(
+      collection(db, "posts"),
+      orderBy(orderByField, "desc")
+    );
+    const documentSnapshots = await getDocs(q);
+    const postsData = documentSnapshots.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    }));
+
+    const authorIds = [...new Set(postsData.map(p => p.authorId).filter(id => id))];
+    const authorProfiles = await Promise.all(
+      authorIds.map(id => getProfile(id).catch(() => null))
+    );
+    const profilesMap = authorProfiles.reduce((acc, profile) => {
+      if (profile) acc[profile.id] = profile;
+      return acc;
+    }, {});
+
+    return postsData.map(post => ({
+      ...post,
+      profiles: profilesMap[post.authorId] || null,
+    }));
+  } catch (error) {
+    console.error('Error fetching all posts:', error);
+    return [];
+  }
+};
 
 export const getPostById = async (id) => {
   try {
@@ -190,19 +222,22 @@ export const incrementPostView = async (postId) => {
   }
 };
 
-export const uploadImage = async (file, token) => {
+export const uploadImage = async (file) => {
   try {
-    supabase.auth.setAuth(token);
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `public/${fileName}`;
 
+    // Supabase storage에 파일 업로드 (인증 없이)
     const { error: uploadError } = await supabase.storage
-      .from('images')
+      .from('images') // Supabase 버킷 이름
       .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      throw uploadError;
+    }
 
+    // 업로드된 파일의 공개 URL 가져오기
     const { data: urlData } = supabase.storage
       .from('images')
       .getPublicUrl(filePath);
@@ -211,8 +246,6 @@ export const uploadImage = async (file, token) => {
   } catch (error) {
     console.error("Error uploading image to Supabase:", error);
     throw error;
-  } finally {
-    supabase.auth.setAuth(null);
   }
 };
 

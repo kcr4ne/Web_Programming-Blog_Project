@@ -15,24 +15,26 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
 
   const contentRef = useRef(null);
   const { showNotification } = useNotification();
-  const { user, getFreshToken } = useAuth();
+  const { user } = useAuth();
 
   const handlePaste = async (e) => {
     if (isSubmitting) return;
     const imageFile = Array.from(e.clipboardData.files).find(file => file.type.startsWith('image/'));
     if (!imageFile) return;
     e.preventDefault();
-    const placeholder = `\n![이미지 업로드 중 ${imageFile.name}...]()\n`;
+    const placeholder = `
+![이미지 업로드 중 ${imageFile.name}...]()
+`;
     const textarea = contentRef.current;
     const cursorPosition = textarea.selectionStart;
     const newContent = `${content.substring(0, cursorPosition)}${placeholder}${content.substring(cursorPosition)}`;
     setContent(newContent);
     try {
       showNotification('이미지 업로드 중...', 'info');
-      const token = await getFreshToken();
-      if (!token) throw new Error('인증 토큰을 가져올 수 없습니다.');
-      const imageUrl = await uploadImage(imageFile, token);
-      const finalMarkdown = `\n![${imageFile.name}](${imageUrl})\n`;
+      const imageUrl = await uploadImage(imageFile);
+      const finalMarkdown = `
+![${imageFile.name}](${imageUrl})
+`;
       setContent(currentContent => currentContent.replace(placeholder, finalMarkdown));
       showNotification('이미지가 성공적으로 업로드되었습니다!', 'success');
     } catch (error) {

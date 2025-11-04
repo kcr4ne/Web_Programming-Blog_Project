@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env.local
+serviceAccountKey.json
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +24,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated files
+cors.json
+*.tar.gz
+google-cloud-sdk/

@@ -5,7 +5,7 @@ import { useNotification } from '../hooks/useNotification';
 import { logout } from '../services/authService';
 
 function ProfileDropdown() {
-  const { user, profile, setAuthSession } = useAuth(); // Use the hook internally
+  const { user, profile, isAdmin, setAuthSession } = useAuth(); // Use the hook internally
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -50,6 +50,11 @@ function ProfileDropdown() {
       </button>
       {isOpen && (
         <div className="profile-dropdown-menu">
+          {isAdmin && (
+            <Link to="/admin/dashboard" className="dropdown-item" onClick={() => setIsOpen(false)}>
+              관리자 대시보드
+            </Link>
+          )}
           <Link to="/edit-profile" className="dropdown-item" onClick={() => setIsOpen(false)}>프로필 수정</Link>
           <button onClick={handleLogout} className="dropdown-item dropdown-item-button">
             로그아웃
