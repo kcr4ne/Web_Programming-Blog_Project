@@ -66,7 +66,13 @@ function PostDetail() {
         </p>
         
         <div className="post-content" style={{ lineHeight: 1.7, fontSize: '1.1rem' }}>
-          <ReactMarkdown>{post.content || '이 게시물에는 내용이 없습니다.'}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" />
+            }}
+          >
+            {post.content || '이 게시물에는 내용이 없습니다.'}
+          </ReactMarkdown>
         </div>
 
         <hr style={{ margin: '2rem 0', borderColor: '#333' }} />

@@ -28,7 +28,7 @@ const MainLayout = () => {
       {user && <MyPostsSidebar />}
       <main style={{
         flex: 1,
-        padding: '1rem 2rem',
+        padding: '1rem 3rem',
         marginLeft: isSidebarVisible && user ? '250px' : '0',
         transition: 'margin-left 0.3s ease-in-out',
       }}>

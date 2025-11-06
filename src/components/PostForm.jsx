@@ -63,6 +63,61 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
     // On success, the parent component will navigate away, so we don't need to set isSubmitting to false here.
   };
 
+  const applyMarkdown = (startTag, endTag = startTag) => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const placeholder = selectedText || '텍스트';
+    
+    const newContent = 
+      content.substring(0, start) +
+      startTag + placeholder + endTag +
+      content.substring(end);
+    
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newStart = start + startTag.length;
+      const newEnd = newStart + placeholder.length;
+      textarea.setSelectionRange(newStart, newEnd);
+    }, 0);
+  };
+
+  const applyHeading = () => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+    
+    const newContent = 
+      content.substring(0, lineStart) +
+      '### ' +
+      content.substring(lineStart);
+      
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + 4, start + 4);
+    }, 0);
+  };
+
+  const MarkdownToolbar = () => (
+    <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <button type="button" onClick={() => applyMarkdown('**')} className="button" title="굵게"><b>B</b></button>
+      <button type="button" onClick={() => applyMarkdown('*')} className="button" title="기울임꼴"><i>I</i></button>
+      <button type="button" onClick={applyHeading} className="button" title="제목">H</button>
+      <button type="button" onClick={() => applyMarkdown('[', '](여기에 URL 입력)')} className="button" title="링크">🔗</button>
+      <button type="button" onClick={() => applyMarkdown('\n```\n', '\n```\n')} className="button" title="코드 블록">{'<>'} 
+      </button>
+    </div>
+  );
+
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
@@ -91,7 +146,11 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
       />
       <div style={{ display: 'flex', flex: 1, gap: '1rem', overflow: 'hidden' }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <label htmlFor="content" style={{ marginBottom: '0.5rem' }}>내용 (이미지 붙여넣기 가능)</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <label htmlFor="content">내용 (이미지 붙여넣기 가능)</label>
+            <small style={{ color: '#aaa' }}>마크다운 지원</small>
+          </div>
+          <MarkdownToolbar />
           <textarea
             id="content"
             ref={contentRef}
@@ -104,7 +163,13 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 1rem' }}>
           <h3 style={{ marginTop: 0 }}>미리보기</h3>
-          <ReactMarkdown>{content}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" />
+            }}
+          >
+            {content}
+          </ReactMarkdown>
         </div>
       </div>
     </form>
