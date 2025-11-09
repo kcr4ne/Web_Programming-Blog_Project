@@ -1,14 +1,11 @@
 import { put } from '@vercel/blob';
 
-export default async function upload(req) {
-  const { searchParams } = new URL(req.url);
-  const filename = searchParams.get('filename');
+export default async function upload(req, res) {
+  // In the Node.js runtime, query parameters are on the `req.query` object.
+  const { filename } = req.query;
 
-  if (!filename || !req.body) {
-    return new Response(JSON.stringify({ message: 'Missing filename or file body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!filename) {
+    return res.status(400).json({ message: 'Missing filename query parameter' });
   }
 
   // IMPORTANT: In a real-world application, you must secure this endpoint.
@@ -17,19 +14,16 @@ export default async function upload(req) {
   // Firebase Auth token passed in the request headers) before proceeding.
 
   try {
-    const blob = await put(filename, req.body, {
+    // The `req` object itself is a readable stream in the Node.js runtime.
+    // We can pass it directly to the `put` function's body.
+    const blob = await put(filename, req, {
       access: 'public',
     });
 
-    return new Response(JSON.stringify(blob), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Use the `res` object to send the JSON response.
+    return res.status(200).json(blob);
   } catch (error) {
     console.error('Error uploading to Vercel Blob:', error);
-    return new Response(JSON.stringify({ message: 'Error uploading file', error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ message: 'Error uploading file', error: error.message });
   }
 }
