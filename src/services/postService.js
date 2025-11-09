@@ -1,4 +1,4 @@
-import { db, storage } from "./firebase.js";
+import { db } from "./firebase.js";
 import {
   collection,
   getDocs,
@@ -17,7 +17,6 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { supabase } from './supabase.js';
 
 const POSTS_PER_PAGE = 12;
 
@@ -224,27 +223,27 @@ export const incrementPostView = async (postId) => {
 
 export const uploadImage = async (file) => {
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `public/${fileName}`;
+    // Sanitize the filename to remove special characters that might cause issues.
+    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9_.-]/g, '');
+    const encodedFilename = encodeURIComponent(sanitizedFilename);
 
-    // Supabase storage에 파일 업로드 (인증 없이)
-    const { error: uploadError } = await supabase.storage
-      .from('images') // Supabase 버킷 이름
-      .upload(filePath, file);
+    const response = await fetch(`/api/upload?filename=${encodedFilename}`, {
+      method: 'POST',
+      body: file,
+    });
 
-    if (uploadError) {
-      throw uploadError;
+    if (!response.ok) {
+      const errorBody = await response.json();
+      console.error("Error response from upload API:", errorBody);
+      throw new Error(`Image upload failed: ${errorBody.message || 'Unknown error'}`);
     }
 
-    // 업로드된 파일의 공개 URL 가져오기
-    const { data: urlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath);
-
-    return urlData.publicUrl;
+    const newBlob = await response.json();
+    
+    // The `url` property of the returned blob object is the public URL.
+    return newBlob.url;
   } catch (error) {
-    console.error("Error uploading image to Supabase:", error);
+    console.error("Error uploading image:", error);
     throw error;
   }
 };
