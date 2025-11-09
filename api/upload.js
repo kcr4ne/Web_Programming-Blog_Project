@@ -1,7 +1,6 @@
 import { put } from '@vercel/blob';
 
 export default async function upload(req, res) {
-  // In the Node.js runtime, query parameters are on the `req.query` object.
   const { filename } = req.query;
 
   if (!filename) {
@@ -14,15 +13,23 @@ export default async function upload(req, res) {
   // Firebase Auth token passed in the request headers) before proceeding.
 
   try {
+    // Generate a unique filename to prevent overwrites
+    const uniqueFilename = `${Date.now()}-${filename}`;
+
     // The `req` object itself is a readable stream in the Node.js runtime.
     // We can pass it directly to the `put` function's body.
-    const blob = await put(filename, req, {
+    const blob = await put(uniqueFilename, req, {
       access: 'public',
     });
 
     // Use the `res` object to send the JSON response.
     return res.status(200).json(blob);
   } catch (error) {
+    // Check if the error is the specific "already exists" error.
+    // Note: This is a fallback. The unique filename should prevent this.
+    if (error.message.includes('This blob already exists')) {
+      return res.status(409).json({ message: 'A file with this name already exists. Please rename the file and try again.', error: error.message });
+    }
     console.error('Error uploading to Vercel Blob:', error);
     return res.status(500).json({ message: 'Error uploading file', error: error.message });
   }
