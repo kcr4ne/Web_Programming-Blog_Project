@@ -87,7 +87,7 @@ const Navbar = () => {
         alignItems: 'center',
         padding: '0.5rem 2rem',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', transform: 'translateY(-6px)' }}>
           {user && (
             <button
               onClick={toggleSidebar}
