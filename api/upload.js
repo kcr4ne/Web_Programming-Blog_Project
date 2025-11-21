@@ -1,4 +1,5 @@
 import { put } from '@vercel/blob';
+import sharp from 'sharp';
 
 export default async function upload(req, res) {
   const { filename } = req.query;
@@ -8,25 +9,40 @@ export default async function upload(req, res) {
   }
 
   // IMPORTANT: In a real-world application, you must secure this endpoint.
-  // This example allows any unauthenticated user to upload files.
-  // You should verify the user's identity here (e.g., by checking a
-  // Firebase Auth token passed in the request headers) before proceeding.
 
   try {
-    // Generate a unique filename to prevent overwrites
-    const uniqueFilename = `${Date.now()}-${filename}`;
+    const isGif = filename.toLowerCase().endsWith('.gif');
+    const originalFilename = filename.substring(0, filename.lastIndexOf('.'));
 
-    // The `req` object itself is a readable stream in the Node.js runtime.
-    // We can pass it directly to the `put` function's body.
-    const blob = await put(uniqueFilename, req, {
+    let sharpTransformer;
+    let uniqueFilename;
+    let contentType;
+
+    if (isGif) {
+      // Set up a sharp transformer for GIF
+      sharpTransformer = sharp({ animated: true }).gif();
+      uniqueFilename = `${Date.now()}-${originalFilename}.gif`;
+      contentType = 'image/gif';
+    } else {
+      // Set up a sharp transformer for WEBP
+      sharpTransformer = sharp().webp({ quality: 80 });
+      uniqueFilename = `${Date.now()}-${originalFilename}.webp`;
+      contentType = 'image/webp';
+    }
+
+    // Pipe the request stream through the sharp transformer
+    const processingStream = req.pipe(sharpTransformer);
+
+    // Upload the processed stream to Vercel Blob
+    const blob = await put(uniqueFilename, processingStream, {
       access: 'public',
+      contentType: contentType, // Set the correct content type
     });
 
     // Use the `res` object to send the JSON response.
     return res.status(200).json(blob);
   } catch (error) {
     // Check if the error is the specific "already exists" error.
-    // Note: This is a fallback. The unique filename should prevent this.
     if (error.message.includes('This blob already exists')) {
       return res.status(409).json({ message: 'A file with this name already exists. Please rename the file and try again.', error: error.message });
     }
