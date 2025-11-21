@@ -43,6 +43,11 @@ a:hover {
   text-decoration: none;
 }
 
+.button-sm {
+  padding: 4px 8px;
+  font-size: 0.875rem; /* 14px */
+}
+
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;

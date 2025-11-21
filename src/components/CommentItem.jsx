@@ -34,23 +34,22 @@ const CommentItem = ({ comment, onCommentDeleted }) => {
   const authorName = comment.authorProfile?.username || '익명';
 
   return (
-    <div className="comment-item py-5" style={{ borderBottom: '1px solid #333' }}>
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="comment-item" style={{ backgroundColor: '#1e1e1e', border: '1px solid #444', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex-1" style={{ lineHeight: '1.2' }}>
           <span className="font-bold text-white">{authorName}</span>
-          <p className="text-sm mt-1" style={{ color: '#aaa' }}>{formattedDate}</p>
+          <p className="text-sm" style={{ color: '#aaa' }}>{formattedDate}</p>
         </div>
         {(isAuthor || isAdmin) && (
           <button
             onClick={handleDelete}
-            className="text-sm opacity-60 hover:opacity-100 transition-opacity"
-            style={{ color: '#cf6679' }}
+            className="button button-danger button-sm"
           >
             삭제
           </button>
         )}
       </div>
-      <p className="mt-3" style={{ color: '#eee', lineHeight: '1.6' }}>{comment.content}</p>
+      <p style={{ color: '#eee', lineHeight: '1.6' }}>{comment.content}</p>
     </div>
   );
 };
