@@ -1,6 +1,22 @@
 import { put } from "@vercel/blob";
 import sharp from "sharp";
 
+// Helper to get raw body from request stream
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+    req.on("end", () => {
+      resolve(Buffer.concat(chunks));
+    });
+    req.on("error", (err) => {
+      reject(err);
+    });
+  });
+}
+
 export default async function upload(req, res) {
   const { filename } = req.query;
 
@@ -13,32 +29,35 @@ export default async function upload(req, res) {
   // IMPORTANT: In a real-world application, you must secure this endpoint.
 
   try {
+    const buffer = await getRawBody(req);
+
+    if (buffer.length === 0) {
+      return res.status(400).json({ message: "Request body is empty" });
+    }
+
     const isGif = filename.toLowerCase().endsWith(".gif");
     const originalFilename = filename.substring(0, filename.lastIndexOf("."));
 
-    let sharpTransformer;
+    let processedBuffer;
     let uniqueFilename;
     let contentType;
 
     if (isGif) {
-      // Set up a sharp transformer for GIF
-      sharpTransformer = sharp({ animated: true }).gif();
+      // For GIFs, pass the buffer directly without format conversion
+      processedBuffer = buffer;
       uniqueFilename = `${Date.now()}-${originalFilename}.gif`;
       contentType = "image/gif";
     } else {
-      // Set up a sharp transformer for WEBP
-      sharpTransformer = sharp().webp({ quality: 80 });
+      // For other formats, convert to WEBP
+      processedBuffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
       uniqueFilename = `${Date.now()}-${originalFilename}.webp`;
       contentType = "image/webp";
     }
 
-    // Pipe the request stream through the sharp transformer
-    const processingStream = req.pipe(sharpTransformer);
-
-    // Upload the processed stream to Vercel Blob
-    const blob = await put(uniqueFilename, processingStream, {
+    // Upload the processed buffer to Vercel Blob
+    const blob = await put(uniqueFilename, processedBuffer, {
       access: "public",
-      contentType: contentType, // Set the correct content type
+      contentType: contentType,
     });
 
     // Use the `res` object to send the JSON response.
@@ -52,7 +71,7 @@ export default async function upload(req, res) {
         error: error.message,
       });
     }
-    console.error("Error uploading to Vercel Blob:", error);
+    console.error("Error in upload handler:", error);
     return res
       .status(500)
       .json({ message: "Error uploading file", error: error.message });

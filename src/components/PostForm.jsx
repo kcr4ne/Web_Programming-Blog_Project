@@ -22,9 +22,7 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
     const imageFile = Array.from(e.clipboardData.files).find(file => file.type.startsWith('image/'));
     if (!imageFile) return;
     e.preventDefault();
-    const placeholder = `
-![이미지 업로드 중 ${imageFile.name}...]()
-`;
+    const placeholder = `\n[이미지 업로드 중: ${imageFile.name}...]\n`;
     const textarea = contentRef.current;
     const cursorPosition = textarea.selectionStart;
     const newContent = `${content.substring(0, cursorPosition)}${placeholder}${content.substring(cursorPosition)}`;
@@ -32,9 +30,7 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
     try {
       showNotification('이미지 업로드 중...', 'info');
       const imageUrl = await uploadImage(imageFile);
-      const finalMarkdown = `
-![${imageFile.name}](${imageUrl})
-`;
+      const finalMarkdown = `![${imageFile.name}](${imageUrl})`;
       setContent(currentContent => currentContent.replace(placeholder, finalMarkdown));
       showNotification('이미지가 성공적으로 업로드되었습니다!', 'success');
     } catch (error) {
@@ -161,7 +157,7 @@ function PostForm({ initialData = {}, onSubmit, submitButtonText = '제출' }) {
             style={{ flex: 1, resize: 'none', borderRight: '1px solid #333' }}
           />
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 1rem' }}>
+        <div className="post-content" style={{ flex: 1, overflowY: 'auto', padding: '0 1rem' }}>
           <h3 style={{ marginTop: 0 }}>미리보기</h3>
           <ReactMarkdown
             components={{
