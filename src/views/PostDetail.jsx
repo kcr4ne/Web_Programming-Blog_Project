@@ -5,6 +5,9 @@ import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import ReactMarkdown from 'react-markdown';
 import { usePost } from '../hooks/usePost';
+import CommentForm from '../components/CommentForm';
+import CommentList from '../components/CommentList';
+import useComments from '../hooks/useComments';
 
 function PostDetail() {
   const { slug } = useParams();
@@ -13,6 +16,8 @@ function PostDetail() {
   const { user, isAdmin } = useAuth();
   const { showNotification } = useNotification();
   const viewIncremented = useRef(false);
+
+  const { comments, loading: loadingComments, error: commentError, refetchComments } = useComments(post?.id);
 
   useEffect(() => {
     if (post && post.id && !viewIncremented.current) {
@@ -86,6 +91,16 @@ function PostDetail() {
                 게시물 삭제
               </button>
             </>
+          )}
+        </div>
+
+        {/* Comments Section */}
+        <div className="mt-8">
+          <CommentForm postId={post.id} onCommentAdded={refetchComments} />
+          {loadingComments && <p className="text-gray-400 text-center py-4">댓글을 불러오는 중...</p>}
+          {commentError && <p className="text-red-500 text-center py-4">댓글을 불러오는 중 오류가 발생했습니다.</p>}
+          {!loadingComments && !commentError && (
+            <CommentList comments={comments} onCommentDeleted={refetchComments} />
           )}
         </div>
       </article>
